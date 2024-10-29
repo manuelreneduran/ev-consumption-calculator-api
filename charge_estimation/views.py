@@ -35,12 +35,18 @@ class EVTypeListView(APIView):
 class ChargeEstimateView(APIView):
     def post(self, request):
         data = request.data
-        origin_latitude = data.get('origin_latitude')
-        origin_longitude = data.get('origin_longitude')
-        destination_latitude = data.get('destination_latitude')
-        destination_longitude = data.get('destination_longitude')
+        origin = data.get('origin')
+        destination = data.get('destination')
         driving_style = data.get('driving_style')
         ev_type_id = data.get('ev_type')
+
+        # Convert addresses to coordinates
+        try:
+            origin_latitude, origin_longitude = get_coordinates(origin)
+            destination_latitude, destination_longitude = get_coordinates(
+                destination)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         # Retrieve EV type details
         try:
@@ -64,6 +70,8 @@ class ChargeEstimateView(APIView):
 
         # Save and return result
         journey = Journey.objects.create(
+            origin=origin,
+            destination=destination,
             origin_latitude=origin_latitude,
             origin_longitude=origin_longitude,
             destination_latitude=destination_latitude,
@@ -78,6 +86,22 @@ class ChargeEstimateView(APIView):
         )
         serializer = JourneySerializer(journey)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+def get_coordinates(address):
+    """Helper function to get the latitude and longitude of an address using Google Maps Geocoding API."""
+    url = f"https://maps.googleapis.com/maps/api/geocode/json?address={
+        address}&key={google_maps_api_key}"
+    response = requests.get(url)
+    data = response.json()
+
+    if response.status_code == 200 and data['status'] == 'OK':
+        location = data['results'][0]['geometry']['location']
+        return location['lat'], location['lng']
+    else:
+        error_message = data.get(
+            'error_message', 'Failed to retrieve coordinates')
+        raise Exception(f"Geocoding error: {error_message}")
 
 
 def calculate_charge_usage(origin_latitude, origin_longitude, destination_latitude, destination_longitude, battery_capacity_kwh, efficiency_kwh_per_km, driving_style):

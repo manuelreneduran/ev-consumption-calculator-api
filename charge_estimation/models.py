@@ -23,18 +23,20 @@ class EVType(models.Model):
 
 
 class Journey(models.Model):
-    origin_latitude = models.FloatField(default=0)
-    origin_longitude = models.FloatField(default=0)
-    destination_latitude = models.FloatField(default=0)
-    destination_longitude = models.FloatField(default=0)
-    distance_km = models.FloatField(default=0)
-    charge_used_kwh = models.FloatField(default=0)
-    percentage_charge_used = models.FloatField(default=0)  # Removed the comma
+    origin = models.CharField(max_length=200, null=True)
+    origin_latitude = models.FloatField(null=True)
+    origin_longitude = models.FloatField(null=True)
+    destination = models.CharField(max_length=200, null=True)
+    destination_latitude = models.FloatField(null=True)
+    destination_longitude = models.FloatField(null=True)
+    distance_km = models.FloatField(null=True)
+    charge_used_kwh = models.FloatField(null=True)
+    percentage_charge_used = models.FloatField(null=True)  # Removed the comma
     round_trip_charge_used_kwh = models.FloatField(
-        default=0)  # Removed the comma
+        null=True)  # Removed the comma
     round_trip_percentage_used = models.FloatField(
-        default=0)  # Removed the comma
-    ev_type = models.ForeignKey(EVType, on_delete=models.CASCADE, default=1)
+        null=True)  # Removed the comma
+    ev_type = models.ForeignKey(EVType, on_delete=models.CASCADE, null=True)
     driving_style = models.CharField(max_length=20, default=DrivingStyle.REGULAR.name, choices=[(
         style.name, style.value) for style in DrivingStyle])
 
