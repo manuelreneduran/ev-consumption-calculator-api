@@ -32,6 +32,22 @@ class EVTypeListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class EVTypeDropdownView(APIView):
+    def get(self, request):
+        ev_types = EVType.objects.all()
+
+        # Format for dropdown options
+        dropdown_options = [
+            {
+                'value': str(ev_type.id),  # ID as a string
+                'label': f"{ev_type.make} {ev_type.model} ({ev_type.year})"
+            }
+            for ev_type in ev_types
+        ]
+
+        return Response(dropdown_options, status=status.HTTP_200_OK)
+
+
 class ChargeEstimateView(APIView):
     def post(self, request):
         data = request.data
@@ -46,7 +62,7 @@ class ChargeEstimateView(APIView):
             destination_latitude, destination_longitude = get_coordinates(
                 destination)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error converting addresses": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         # Retrieve EV type details
         try:
@@ -66,7 +82,7 @@ class ChargeEstimateView(APIView):
                 ev_type.efficiency_kwh_per_km,
                 driving_style)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error calculating charge usage": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         # Save and return result
         journey = Journey.objects.create(

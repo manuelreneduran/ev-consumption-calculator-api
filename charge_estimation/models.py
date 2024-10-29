@@ -4,10 +4,10 @@ from enum import Enum
 
 class DrivingStyle(Enum):
     VERY_EFFICIENT = 0.75
-    EFFICIENT = 0.9
-    REGULAR = 1.0
-    AGGRESSIVE = 1.3043
-    VERY_AGGRESSIVE = 1.5
+    EFFICIENT = 1.00
+    REGULAR = 1.25
+    AGGRESSIVE = 1.5
+    VERY_AGGRESSIVE = 1.75
 
 
 class EVType(models.Model):
